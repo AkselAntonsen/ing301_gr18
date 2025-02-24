@@ -13,6 +13,7 @@ class Measurement:
         self.value = value
         self.unit = unit
 
+<<<<<<< HEAD
     def __repr__(self):
         return f"Measurement({self.timestamp}, {self.value} {self.unit})"
 
@@ -101,6 +102,11 @@ class Floor:
 
 
 ########################################################
+=======
+
+
+# TODO: Add your own classes here!
+>>>>>>> parent of 023b028 (Update domain.py)
 
 
 class SmartHouse:
