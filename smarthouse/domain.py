@@ -8,9 +8,95 @@ class Measurement:
         self.value = value
         self.unit = unit
 
+class Device : 
+    def __init__ (self, device_id, manefacturer, model ,type, name):
+        self.device_id = device_id
+        self.manefacturer = manefacturer
+        self.model = model 
+        self.type = type
+        self.name = name 
+        self.room = None
+
+##
+class Sensor(Device):
+    """
+    Represents a sensor device that collects measurements.
+    """
+    def __init__(self, device_id, manufacturer, model, name, unit):
+        super().__init__(device_id, manufacturer, model, "Sensor", name)
+        self.unit = unit
+        self.measurements = []
+
+    def record_measurement(self, value):
+        timestamp = datetime.now()
+        measurement = Measurement(timestamp, value, self.unit)
+        self.measurements.append(measurement)
+
+    def get_latest_value(self):
+        return self.measurements[-1] if self.measurements else None
+
+    def get_measurement_history(self):
+        return self.measurements
+
+class Actuator(Device):
+    """
+    Represents an actuator device that can change its state.
+    """
+    def __init__(self, device_id, manufacturer, model, name):
+        super().__init__(device_id, manufacturer, model, "Actuator", name)
+        self.state = "off"
+
+    def turn_on(self):
+        self.state = "on"
+
+    def turn_off(self):
+        self.state = "off"
+
+    def adjust(self, value):
+        self.state = value
+
+class SensorActuator(Sensor, Actuator):
+    """
+    Represents a device that functions as both a sensor and an actuator.
+    """
+    def __init__(self, device_id, manufacturer, model, name, unit):
+        Sensor.__init__(self, device_id, manufacturer, model, name, unit)
+        Actuator.__init__(self, device_id, manufacturer, model, name)
+
+##
+
+class Room : 
+    def __init__(self,name , area):
+        self.name = name
+        self.area = area
+        self.devices = []
+
+
+    def add_device(self,device):
+        self.devices.append(device)
+        device.room = self            # funker ikke da jeg ikke har laget classe device ferdig men den skal, denne ddelen gjør at devicene vet hvor de hører hjeme.
+
+
+class Floor: 
+    #! må sikkert være en liste ser jeg for meg kommer tilbake til denne 
+
+# this class represents the flors in the house
+
+    def __init__(self, floor) :
+        self.floor = floor
+        self.rooms = []
+        
+    def add_room(self, room):
+        self.rooms.append(room)
+        room.floor = []                 # hmmmm
+    
+    def calculate_area(self)
+       return sum(room.area for room in self.rooms)
+
 
 
 # TODO: Add your own classes here!
+## test 
 
 
 class SmartHouse:
