@@ -22,9 +22,11 @@ class Measurement:
 
 
 class Device:
-    def __init__(self, device_id: str, name: str):
-        self.device_id = device_id
-        self.name = name
+    def __init__(self, id: str, device_type: str, supplier: str,  model_name: str):
+        self.id = id
+        self.device_type = device_type
+        self.supplier = supplier
+        self.model_name = model_name
 
     def is_sensor(self):
         return isinstance(self, Sensor)
@@ -34,8 +36,8 @@ class Device:
 
 
 class Sensor(Device):
-    def __init__(self, device_id: str, name: str, measurements: Optional[List[Measurement]] = None):
-        super().__init__(device_id, name)
+    def __init__(self, id: str, device_type: str, supplier: str, model_name: str, measurements: Optional[List[Measurement]] = None):
+        super().__init__(id, device_type, supplier, model_name, measurements)
         self.measurements = measurements or []
 
     def last_measurement(self):
@@ -43,8 +45,8 @@ class Sensor(Device):
 
 
 class Actuator(Device):
-    def __init__(self, device_id: str, name: str, state: bool = False):
-        super().__init__(device_id, name)
+    def __init__(self, id: str, name: str, state: bool = False):
+        super().__init__(id, name)
         self.state = state  # ON or OFF
 
     def turn_on(self, value: Optional[float] = None):
@@ -58,8 +60,8 @@ class Actuator(Device):
 
 
 class Room:
-    def __init__(self, name: str, area: float):
-        self.name = name
+    def __init__(self, room_name: str, area: float):
+        self.room_name = room_name
         self.area = area
         self.devices: List[Device] = []
 
@@ -145,14 +147,14 @@ class SmartHouse:
         These methods register a given device in a given room.
         """
         room.add_device(device)
-        self.devices[device.device_id] = device
+        self.devices[device.id] = device
 
     
-    def get_device(self, device_id: str) -> Optional[Device]:
+    def get_device_by_id(self, id: str) -> Optional[Device]:
         """
         This method retrieves a device object via its id.
         """
-        return self.devices.get(device_id)
+        return self.devices.get(id)
 
 
     def get_devices(self) -> List[Device]:
