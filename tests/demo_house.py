@@ -28,21 +28,12 @@ masterbedroom = DEMO_HOUSE.register_room(floor2, 17.0, "Master Bedroom")
 
 # Register devices
 
-<<<<<<< Updated upstream
 sensor1 = Sensor("3d87e5c0-8716-4b0b-9c67-087eaaed7b45", "Humidity Sensor", "AetherCorp", "Aqua Alert 800")
 sensor2 = Sensor("cd5be4e8-0e6b-4cb5-a21f-819d06cf5fc5", "Motion Sensor","NebulaGuard Innovations","MoveZ Detect 69")
 sensor3 = Sensor("a2f8690f-2b3a-43cd-90b8-9deea98b42a7", "Electricity Meter","MysticEnergy Innovations" ,"Volt Watch Elite")
 sensor4 = Sensor("8a43b2d7-e8d3-4f3d-b832-7dbf37bf629e", "CO2 sensor","ElysianTech","Smoke Warden 1000")
 sensor5 = Sensor("7c6e35e1-2d8b-4d81-a586-5d01a03bb02c", "Air Quality Sensor","CelestialSense Technologies","AeroGuard Pro")
 sensor6 = Sensor("4d8b1d62-7921-4917-9b70-bbd31f6e2e8e", "Temperature Sensor","AetherCorp" , "SmartTemp 42", [Measurement(datetime.now(), 22.5, "°C")])
-=======
-sensor1 = Sensor("3d87e5c0-8716-4b0b-9c67-087eaaed7b45", "Humidity Sensor", "")
-sensor2 = Sensor("cd5be4e8-0e6b-4cb5-a21f-819d06cf5fc5", "Motion Sensor")
-sensor3 = Sensor("a2f8690f-2b3a-43cd-90b8-9deea98b42a7", "Electricity Meter")
-sensor4 = Sensor("8a43b2d7-e8d3-4f3d-b832-7dbf37bf629e", "CO2 sensor")
-sensor5 = Sensor("7c6e35e1-2d8b-4d81-a586-5d01a03bb02c", "Air Quality Sensor")
-sensor6 = Sensor("4d8b1d62-7921-4917-9b70-bbd31f6e2e8e", "Temperature Sensor", [Measurement(datetime.now(), 22.5, "°C")])
->>>>>>> Stashed changes
 
 actuator1 = Actuator("8d4e4c98-21a9-4d1e-bf18-523285ad90f6", "Smart Oven", True)
 actuator2 = Actuator("9a54c1ec-0cb5-45a7-b20d-2a7349f1b132", "Automatic Garage Door", False)
