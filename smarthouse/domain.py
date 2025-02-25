@@ -27,6 +27,7 @@ class Device:
         self.device_type = device_type
         self.supplier = supplier
         self.model_name = model_name
+        self.room = None
 
     def is_sensor(self):
         return isinstance(self, Sensor)
@@ -37,7 +38,7 @@ class Device:
 
 class Sensor(Device):
     def __init__(self, id: str, device_type: str, supplier: str, model_name: str, measurements: Optional[List[Measurement]] = None):
-        super().__init__(id, device_type, supplier, model_name, measurements)
+        super().__init__(id, device_type, supplier, model_name)
         self.measurements = measurements or []
 
     def last_measurement(self):
@@ -45,8 +46,8 @@ class Sensor(Device):
 
 
 class Actuator(Device):
-    def __init__(self, id: str, name: str, state: bool = False):
-        super().__init__(id, name)
+    def __init__(self, id: str, device_type: str, supplier: str, model_name: str, state: bool = False):
+        super().__init__(id, device_type, supplier, model_name)
         self.state = state  # ON or OFF
 
     def turn_on(self, value: Optional[float] = None):
@@ -66,7 +67,12 @@ class Room:
         self.devices: List[Device] = []
 
     def add_device(self, device: Device):
-        # Registers a new device in the room
+
+        # If device already exists in another room, it gets removed
+        if device.room is not None:
+            device.room.devices.remove(device)
+
+        # Add device to this room
         self.devices.append(device)
         device.room = self
 
