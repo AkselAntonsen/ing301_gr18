@@ -35,14 +35,14 @@ sensor4 = Sensor("8a43b2d7-e8d3-4f3d-b832-7dbf37bf629e", "CO2 sensor","ElysianTe
 sensor5 = Sensor("7c6e35e1-2d8b-4d81-a586-5d01a03bb02c", "Air Quality Sensor","CelestialSense Technologies","AeroGuard Pro")
 sensor6 = Sensor("4d8b1d62-7921-4917-9b70-bbd31f6e2e8e", "Temperature Sensor","AetherCorp" , "SmartTemp 42", [Measurement(datetime.now(), 22.5, "°C")])
 
-actuator1 = Actuator("8d4e4c98-21a9-4d1e-bf18-523285ad90f6", "Smart Oven", True)
-actuator2 = Actuator("9a54c1ec-0cb5-45a7-b20d-2a7349f1b132", "Automatic Garage Door", False)
-actuator3 = Actuator("5e13cabc-5c58-4bb3-82a2-3039e4480a6d", "Heat Pump", True)
-actuator4 = Actuator("4d5f1ac6-906a-4fd1-b4bf-3a0671e4c4f1", "Smart Lock", True)
-actuator5 = Actuator("1a66c3d6-22b2-446e-bf5c-eb5b9d1a8c79", "Smart PLug", False)
-actuator6 = Actuator("9e5b8274-4e77-4e4e-80d2-b40d648ea02a", "Dehumidifier", True)
-actuator7 = Actuator("6b1c5f6b-37f6-4e3d-9145-1cfbe2f1fc28", "Light Bulp", True)
-actuator8 = Actuator("c1e8fa9c-4b8d-487a-a1a5-2b148ee9d2d1", "Smart Oven", False)
+actuator1 = Actuator("8d4e4c98-21a9-4d1e-bf18-523285ad90f6", "Smart Oven","IgnisTech Solutions", "Ember Heat 3000", True)
+actuator2 = Actuator("9a54c1ec-0cb5-45a7-b20d-2a7349f1b132", "Automatic Garage Door", "MythicalTech", "Guardian Lock 9000", False)
+actuator3 = Actuator("5e13cabc-5c58-4bb3-82a2-3039e4480a6d", "Heat Pump", "ElysianTech", "Thermo Smart 6000", True)
+actuator4 = Actuator("4d5f1ac6-906a-4fd1-b4bf-3a0671e4c4f1", "Smart Lock","	MythicalTech","Guardian Lock 7000", True)
+actuator5 = Actuator("1a66c3d6-22b2-446e-bf5c-eb5b9d1a8c79", "Smart PLug", "MysticEnergy Innovations", "FlowState X", False)
+actuator6 = Actuator("9e5b8274-4e77-4e4e-80d2-b40d648ea02a", "Dehumidifier", "ArcaneTech Solutions", "Hydra Dry 8000", True)
+actuator7 = Actuator("6b1c5f6b-37f6-4e3d-9145-1cfbe2f1fc28", "Light Bulp", "Elysian Tech", "Lumina Glow 4000", True)
+actuator8 = Actuator("c1e8fa9c-4b8d-487a-a1a5-2b148ee9d2d1", "Smart Oven", "IgnisTech Solutions", "Ember Heat 3000", False)
 
 
 # Assigning devices to rooms
