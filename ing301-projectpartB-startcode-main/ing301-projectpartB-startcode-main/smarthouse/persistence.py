@@ -36,18 +36,21 @@ class SmartHouseRepository:
         all referenced objects within the object structure (e.g. floors, rooms, devices) 
         are retrieved as well. 
         """
-        cursor = self.coon.cursor()         # gjør at vi kan spøre med sqlite
+        cursor = self.conn.cursor()         # gjør at vi kan spøre med sqlite
 
-        cursor.excute("SELECT name FROM sqlite_schema WHERE type = 'table';")       
-        tabels = cursor.fetchall()          # henter alle tabeler 
-        print(tabels)
+        cursor.execute("SELECT name FROM sqlite_schema WHERE type = 'table';")       
+        tables = [row[0] for row in cursor.fetchall()]         # lager en liste over tabell navnene som finnes i filen 
 
-        
+        deep_data = {}
+
+        for x in tables :         # interer gjennom tabellen med navn og henter under tabelene for hver av dem  
+            cursor.execute(F"Select * frome {x};")
+            deep_data[x] = cursor.fetchall()
 
 
-        # TODO: START here! remove the following stub implementation and implement this function 
-        #       by retrieving the data from the database via SQL `SELECT` statements.   
-        return NotImplemented
+
+       
+        return deep_data
 
 
     def get_latest_reading(self, sensor) -> Optional[Measurement]:
