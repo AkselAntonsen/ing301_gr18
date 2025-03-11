@@ -36,8 +36,17 @@ class SmartHouseRepository:
         all referenced objects within the object structure (e.g. floors, rooms, devices) 
         are retrieved as well. 
         """
+        cursor = self.coon.cursor()         # gjør at vi kan spøre med sqlite
+
+        cursor.excute("SELECT name FROM sqlite_schema WHERE type = 'table';")       
+        tabels = cursor.fetchall()          # henter alle tabeler 
+        print(tabels)
+
+        
+
+
         # TODO: START here! remove the following stub implementation and implement this function 
-        #       by retrieving the data from the database via SQL `SELECT` statements.
+        #       by retrieving the data from the database via SQL `SELECT` statements.   
         return NotImplemented
 
 
