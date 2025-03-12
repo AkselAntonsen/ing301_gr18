@@ -36,18 +36,16 @@ class SmartHouseRepository:
         all referenced objects within the object structure (e.g. floors, rooms, devices) 
         are retrieved as well. 
         """
-        cursor = self.conn.cursor()         # gjør at vi kan spøre med sqlite
+        cursor = self.conn.cursor()                             # gjør at vi kan spøre med sqlite
 
         cursor.execute("SELECT name FROM sqlite_schema WHERE type = 'table';")       
-        tables = [row[0] for row in cursor.fetchall()]         # lager en liste over tabell navnene som finnes i filen 
+        tables = [row[0] for row in cursor.fetchall()]          # lager en liste over tabell navnene som finnes i filen 
 
         deep_data = {}
 
-        for x in tables :         # interer gjennom tabellen med navn og henter under tabelene for hver av dem  
-            cursor.execute(F"Select * frome {x};")
-            deep_data[x] = cursor.fetchall()
-
-
+        for navn in tables :                                     # interer gjennom tabellen med navn og henter under tabelene for hver av dem  
+            cursor.execute(F"Select * frome {navn};")
+            deep_data[navn] = cursor.fetchall()                  # her blir daten lagret i en ordbok 
 
        
         return deep_data
