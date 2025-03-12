@@ -36,37 +36,27 @@ class SmartHouseRepository:
         all referenced objects within the object structure (e.g. floors, rooms, devices) 
         are retrieved as well. 
         """
-## forsøk 1 
-"""
-        cursor = self.conn.cursor()                             # gjør at vi kan spøre med sqlite
-
-        cursor.execute("SELECT name FROM sqlite_schema WHERE type = 'table';")       
-        tables = [row[0] for row in cursor.fetchall()]          # lager en liste over tabell navnene som finnes i filen 
-
-        deep_data = {}
-
-        for navn in tables :                                     # interer gjennom tabellen med navn og henter under tabelene for hver av dem  
-            cursor.execute(F"Select * frome {navn};")
-            deep_data[navn] = cursor.fetchall()                  # her blir daten lagret i en ordbok 
-
-       
-        return deep_data
-"""
-
-house = SmartHouse()
-cursor = self.conn.cursor()
-
-def load_floors(self, cursor, house):
 
 
+    house = SmartHouse()
+    cursor = self.conn.cursor()
 
-
-
-
-
-
-
-
+    def load_floors(self, cursor, house):
+     cursor.execute("SELECT level FROME flors")
+     floors = {}
+     for(level,) in cursor.fetchall():
+        floors[level] = house.register_floor(level)
+     return floors
+    
+    def load_rooms(self, cursor, house, floors)
+        cursor.excute("SELECT name, area, FLoor_level FROME romms")
+        rooms {}
+        for ( name, area , floor_level) in cursor.fetchall(): 
+            floor = floors.get(floor_level)
+            if floor : 
+                rooms[name] = house.register_room(floor ,area , name)
+            return rooms 
+        
 
     def get_latest_reading(self, sensor) -> Optional[Measurement]:
         """
