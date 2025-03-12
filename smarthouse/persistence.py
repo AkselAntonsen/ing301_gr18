@@ -36,6 +36,8 @@ class SmartHouseRepository:
         all referenced objects within the object structure (e.g. floors, rooms, devices) 
         are retrieved as well. 
         """
+## forsøk 1 
+"""
         cursor = self.conn.cursor()                             # gjør at vi kan spøre med sqlite
 
         cursor.execute("SELECT name FROM sqlite_schema WHERE type = 'table';")       
@@ -49,6 +51,21 @@ class SmartHouseRepository:
 
        
         return deep_data
+"""
+
+house = SmartHouse()
+cursor = self.conn.cursor()
+
+def load_floors(self, cursor, house):
+
+
+
+
+
+
+
+
+
 
 
     def get_latest_reading(self, sensor) -> Optional[Measurement]:
