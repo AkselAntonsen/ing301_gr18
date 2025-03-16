@@ -37,21 +37,20 @@ class SmartHouseRepository:
         are retrieved as well. 
         """
 
-
-    house = SmartHouse()
-    cursor = self.conn.cursor()
+        house = SmartHouse()
+        cursor = self.conn.cursor()
 
     def load_floors(self, cursor, house):
-     cursor.execute("SELECT level FROME flors")
-     floors = {}
-     for(level,) in cursor.fetchall():
-        floors[level] = house.register_floor(level)
-     return floors
+        cursor.execute("SELECT level FROM floors")
+        floors = {}
+        for(level,) in cursor.fetchall():
+            floors[level] = house.register_floor(level)
+        return floors
     
-    def load_rooms(self, cursor, house, floors)
-        cursor.excute("SELECT name, area, FLoor_level FROME romms")
-        rooms {}
-        for ( name, area , floor_level) in cursor.fetchall(): 
+    def load_rooms(self, cursor, house, floors):
+        cursor.excute("SELECT name, area, Floor_level FROM rooms")
+        rooms = {}
+        for (name, area , floor_level) in cursor.fetchall():
             floor = floors.get(floor_level)
             if floor : 
                 rooms[name] = house.register_room(floor ,area , name)
