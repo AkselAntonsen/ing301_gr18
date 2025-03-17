@@ -1,6 +1,6 @@
 import sqlite3
 from typing import Optional
-from smarthouse.domain import Measurement
+from smarthouse.domain import Measurement, SmartHouse
 from datetime import datetime
 
 class SmartHouseRepository:
@@ -9,9 +9,20 @@ class SmartHouseRepository:
     in a SQLite database.
     """
 
-    def __init__(self, file: str) -> None:
-        self.file = file 
-        self.conn = sqlite3.connect(file, check_same_thread=False)
+    def __init__(self, file):
+        self.file = file
+        self.conn = sqlite3.connect("C:\\Users\\aksel\\ING301\\ing301_gr18\\ing301-projectpartB-startcode-main\\ing301-projectpartB-startcode-main\\data\\db.sql")
+        self._create_tables()
+
+    def _create_tables(self):
+        cur = self.conn.cursor()
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS actuator_states (
+                device_id TEXT PRIMARY KEY,
+                state INTEGER
+            )
+        """)
+        self.conn.commit()
 
     def __del__(self):
         self.conn.close()
@@ -62,27 +73,32 @@ class SmartHouseRepository:
     def load_rooms(self, cursor, house, floors):
         cursor.execute("SELECT name, area, Floor_level FROM rooms")
         rooms = {}
+        for (name, area , floor_level) in cursor.fetchall():
+            floor = floors.get(floor_level)
+            if floor : 
+                rooms[name] = house.register_room(floor, area, name)
+            return rooms 
         for (name, area , floor_level) in cursor.fetchall():              # packer ut av tuppel iterer gjennom fetchall
             floor = floors.get(floor_level)                               # henter en dict for fra funksjonen over floors og sjekker om  vi har en etasje som matcher
             if floor :                                                    # går videre hvis testen over stemmer
                 rooms[name] = house.register_room(floor ,area , name)     # legger inn rom i dict inni house
         return rooms
-        
+
 
     def load_devices(self, cursor, house, rooms):
         cursor.execute("SELECT id, device_type, supplier, model_name, room_name FROM devices")     # henter fra databasen
 
-        for (id, device_type, supplier, model_name, room_name) in cursor.fetchall():                # sjekker datbaesen mot room fuksjonen 
+        for (id, device_type, supplier, model_name, room_name) in cursor.fetchall():                # sjekker datbaesen mot room fuksjonen
          room = rooms.get(room_name)
 
-         if room:                                                                                   # sjekker om det er sensor eller acutaror 
+         if room:                                                                                   # sjekker om det er sensor eller acutaror
                if "sensor" in device.type.lower():
                  device = Sensor(id, device_type, supplier, model_name)
                else:
                  device = Actuator(id, device_type, supplier, model_name)
 
-         house.register_device(room, device)                                                       # registrer det i house 
-        
+         house.register_device(room, device)                                                       # registrer det i house
+
 
     def get_latest_reading(self, sensor) -> Optional[Measurement]:
         """
@@ -91,8 +107,7 @@ class SmartHouseRepository:
         """
         # TODO: After loading the smarthouse, continue here
 
-        con = sqlite3.connect("db.sql")
-        cur = con.cursor()
+        cur = self.conn.cursor()
 
         cur.execute("""
             SELECT ts, value, unit
@@ -103,7 +118,7 @@ class SmartHouseRepository:
         """, (sensor.id,))
 
         row = cur.fetchone()
-        con.close()
+
 
         if row:
             ts_str, value, unit = row
@@ -121,10 +136,20 @@ class SmartHouseRepository:
         #       by creating a new table (`CREATE`), adding some data to it (`INSERT`) first, and then issue
         #       and SQL `UPDATE` statement. Remember also that you will have to call `commit()` on the `Connection`
         #       stored in the `self.conn` instance variable.
-        pass
 
+        # Konverter True/False til 1/0
+        state_value = 1 if actuator.is_active() else 0
 
-    # statistics
+        cur = self.conn.cursor()
+
+        # Først prøver vi å sette inn ny rad, og hvis den finnes, oppdaterer vi
+        cur.execute("""
+               INSERT INTO actuator_states (device_id, state)
+               VALUES (?, ?)
+               ON CONFLICT(device_id) DO UPDATE SET state=excluded.state
+           """, (actuator.id, state_value))
+
+        self.conn.commit()
 
     
     def calc_avg_temperatures_in_room(self, room, from_date: Optional[str] = None, until_date: Optional[str] = None) -> dict:
