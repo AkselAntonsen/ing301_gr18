@@ -20,7 +20,7 @@ class SmartHouseRepository:
 
     def __init__(self, file: str) -> None:
         self.file = file
-        self.conn = sqlite3.connect("db.sql")
+        self.conn = sqlite3.connect("../data/db.sql")
         self._create_tables()
 
 
