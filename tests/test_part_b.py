@@ -8,7 +8,7 @@ from smarthouse.persistence import SmartHouseRepository
 
 class SmartHouseTest(unittest.TestCase):
     file = Path(__file__).parent / "../data/db.sql"
-    repo = SmartHouseRepository(file)
+    repo = SmartHouseRepository(str(file))
 
     def test_cursor(self):
         c = self.repo.cursor()

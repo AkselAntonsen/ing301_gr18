@@ -1,6 +1,6 @@
 import sqlite3
 from typing import Optional
-from smarthouse.domain import Measurement, SmartHouse
+from smarthouse.domain import Measurement, SmartHouse, Sensor, Actuator
 from datetime import datetime
 
 class SmartHouseRepository:
@@ -8,12 +8,6 @@ class SmartHouseRepository:
     Provides the functionality to persist and load a _SmartHouse_ object 
     in a SQLite database.
     """
-
-    def __init__(self, file):
-        self.file = file
-        self.conn = sqlite3.connect(file)
-        self._create_tables()
-
     def _create_tables(self):
         cur = self.conn.cursor()
         cur.execute("""
@@ -24,8 +18,11 @@ class SmartHouseRepository:
         """)
         self.conn.commit()
 
-    def __del__(self):
-        self.conn.close()
+    def __init__(self, file: str) -> None:
+        self.file = file
+        self.conn = sqlite3.connect("db.sql")
+        self._create_tables()
+
 
     def cursor(self) -> sqlite3.Cursor:
         """
@@ -63,28 +60,21 @@ class SmartHouseRepository:
 
         return house
 
-
-    def load_floors(self, cursor, house, floors):
-        cursor.execute("SELECT name, area, Floor_level FROM rooms")
+    def load_floors(self, cursor, house):
+        cursor.execute("SELECT DISTINCT level FROM floors")
         floors = {}
-
-        for(level,) in cursor.fetchall():                                # packer ut av tuppel med (level,) iterer gjennom fetchall
-            floors[level] = house.register_floor(level)                  # henter alle etasjer og leger dem i en dict inni house
-
+        for (level,) in cursor.fetchall():
+            floors[level] = house.register_floor(level)
         return floors
-    
+
     def load_rooms(self, cursor, house, floors):
-        cursor.execute("SELECT name, area, Floor_level FROM rooms")
+        cursor.execute("SELECT name, area, floor FROM rooms")
         rooms = {}
-        for (name, area , floor_level) in cursor.fetchall():
-            floor = floors.get(floor_level)
-            if floor : 
-                rooms[name] = house.register_room(floor, area, name)
-            return rooms 
-        for (name, area , floor_level) in cursor.fetchall():              # packer ut av tuppel iterer gjennom fetchall
-            floor = floors.get(floor_level)                               # henter en dict for fra funksjonen over floors og sjekker om  vi har en etasje som matcher
+
+        for (name, area, floor) in cursor.fetchall():              # packer ut av tuppel iterer gjennom fetchall
+            floor = floors.get(floor)                               # henter en dict for fra funksjonen over floors og sjekker om  vi har en etasje som matcher
             if floor :                                                    # går videre hvis testen over stemmer
-                rooms[name] = house.register_room(floor ,area , name)     # legger inn rom i dict inni house
+                rooms[name] = house.register_room(floor, area, name)     # legger inn rom i dict inni house
         return rooms
 
 
@@ -92,15 +82,15 @@ class SmartHouseRepository:
         cursor.execute("SELECT id, device_type, supplier, model_name, room_name FROM devices")     # henter fra databasen
 
         for (id, device_type, supplier, model_name, room_name) in cursor.fetchall():                # sjekker datbaesen mot room fuksjonen
-         room = rooms.get(room_name)
+            room = rooms.get(room_name)
 
-         if room:                                                                                   # sjekker om det er sensor eller acutaror
-               if "sensor" in device.type.lower():
-                 device = Sensor(id, device_type, supplier, model_name)
-               else:
-                 device = Actuator(id, device_type, supplier, model_name)
+            if room:                                                                                   # sjekker om det er sensor eller acutaror
+                if "sensor" in device_type.lower():
+                    device = Sensor(id, device_type, supplier, model_name)
+                else:
+                    device = Actuator(id, device_type, supplier, model_name)
 
-         house.register_device(room, device)                                                       # registrer det i house
+                house.register_device(room, device)                                                       # registrer det i house
 
 
     def get_latest_reading(self, sensor) -> Optional[Measurement]:
