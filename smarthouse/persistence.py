@@ -1,6 +1,7 @@
 import sqlite3
 from typing import Optional
 from smarthouse.domain import Measurement
+from datetime import datetime
 
 class SmartHouseRepository:
     """
@@ -63,7 +64,27 @@ class SmartHouseRepository:
         Returns None if the given object has no sensor readings.
         """
         # TODO: After loading the smarthouse, continue here
-        return NotImplemented
+
+        con = sqlite3.connect("db.sql")
+        cur = con.cursor()
+
+        cur.execute("""
+            SELECT ts, value, unit
+            FROM measurements
+            WHERE device = ?
+            ORDER BY ts DESC
+            LIMIT 1
+        """, (sensor.id,))
+
+        row = cur.fetchone()
+        con.close()
+
+        if row:
+            ts_str, value, unit = row
+            ts = datetime.fromisoformat(ts_str)
+            return Measurement(ts, value, unit)
+
+        return None
 
 
     def update_actuator_state(self, actuator):
