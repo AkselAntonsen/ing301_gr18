@@ -11,7 +11,7 @@ class SmartHouseRepository:
 
     def __init__(self, file):
         self.file = file
-        self.conn = sqlite3.connect("C:\\Users\\aksel\\ING301\\ing301_gr18\\ing301-projectpartB-startcode-main\\ing301-projectpartB-startcode-main\\data\\db.sql")
+        self.conn = sqlite3.connect(file)
         self._create_tables()
 
     def _create_tables(self):
@@ -54,9 +54,7 @@ class SmartHouseRepository:
         floors = self.load_floors(cursor, house)
         rooms = self.load_rooms(cursor, house, floors)
         # TODO: Load devices here (sensors and actuators)
-<<<<<<< Updated upstream
 
-<<<<<<< Updated upstream
         # Laste inn etasjer
         floors = self.load_floors(cursor, house)
 
@@ -67,28 +65,24 @@ class SmartHouseRepository:
         self.load_devices(cursor, house, rooms)
 
         return house
-=======
->>>>>>> Stashed changes
 
-        return house
 
     def load_floors(self, cursor, house, floors):
         cursor.execute("SELECT name, area, Floor_level FROM rooms")
         floors = {}
-<<<<<<< Updated upstream
+
         for(level,) in cursor.fetchall():                                # packer ut av tuppel med (level,) iterer gjennom fetchall
             floors[level] = house.register_floor(level)                  # henter alle etasjer og leger dem i en dict inni house
-=======
+
         return house
 
     def load_floors(self, cursor, house, floors):
         cursor.execute("SELECT name, area, Floor_level FROM rooms")
         floors = {}
-=======
->>>>>>> Stashed changes
+
         for (level,) in cursor.fetchall():
             floors[level] = house.register_floor(level)
->>>>>>> Stashed changes
+
         return floors
     
     def load_rooms(self, cursor, house, floors):
