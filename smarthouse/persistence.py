@@ -54,6 +54,7 @@ class SmartHouseRepository:
         floors = self.load_floors(cursor, house)
         rooms = self.load_rooms(cursor, house, floors)
         # TODO: Load devices here (sensors and actuators)
+<<<<<<< Updated upstream
 
 <<<<<<< Updated upstream
         # Laste inn etasjer
@@ -66,10 +67,15 @@ class SmartHouseRepository:
         self.load_devices(cursor, house, rooms)
 
         return house
+=======
+>>>>>>> Stashed changes
 
-    def load_floors(self, cursor, house):
-        cursor.execute("SELECT level FROM floors")
+        return house
+
+    def load_floors(self, cursor, house, floors):
+        cursor.execute("SELECT name, area, Floor_level FROM rooms")
         floors = {}
+<<<<<<< Updated upstream
         for(level,) in cursor.fetchall():                                # packer ut av tuppel med (level,) iterer gjennom fetchall
             floors[level] = house.register_floor(level)                  # henter alle etasjer og leger dem i en dict inni house
 =======
@@ -78,6 +84,8 @@ class SmartHouseRepository:
     def load_floors(self, cursor, house, floors):
         cursor.execute("SELECT name, area, Floor_level FROM rooms")
         floors = {}
+=======
+>>>>>>> Stashed changes
         for (level,) in cursor.fetchall():
             floors[level] = house.register_floor(level)
 >>>>>>> Stashed changes
