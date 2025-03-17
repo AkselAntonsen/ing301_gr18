@@ -51,9 +51,6 @@ class SmartHouseRepository:
 
         house = SmartHouse()
         cursor = self.conn.cursor()
-        floors = self.load_floors(cursor, house)
-        rooms = self.load_rooms(cursor, house, floors)
-        # TODO: Load devices here (sensors and actuators)
 
         # Laste inn etasjer
         floors = self.load_floors(cursor, house)
@@ -73,15 +70,6 @@ class SmartHouseRepository:
 
         for(level,) in cursor.fetchall():                                # packer ut av tuppel med (level,) iterer gjennom fetchall
             floors[level] = house.register_floor(level)                  # henter alle etasjer og leger dem i en dict inni house
-
-        return house
-
-    def load_floors(self, cursor, house, floors):
-        cursor.execute("SELECT name, area, Floor_level FROM rooms")
-        floors = {}
-
-        for (level,) in cursor.fetchall():
-            floors[level] = house.register_floor(level)
 
         return floors
     
