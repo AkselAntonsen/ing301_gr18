@@ -2,6 +2,7 @@ import sqlite3
 from typing import Optional
 from smarthouse.domain import Measurement, SmartHouse, Sensor, Actuator
 from datetime import datetime
+import os
 
 class SmartHouseRepository:
     """
@@ -19,9 +20,8 @@ class SmartHouseRepository:
         self.conn.commit()
 
     def __init__(self, file: str) -> None:
-        self.file = file
-        self.conn = sqlite3.connect("../data/db.sql")
-        self._create_tables()
+        self.file = file 
+        self.conn = sqlite3.connect(file, check_same_thread=False)
 
 
     def cursor(self) -> sqlite3.Cursor:
@@ -61,7 +61,7 @@ class SmartHouseRepository:
         return house
 
     def load_floors(self, cursor, house):
-        cursor.execute("SELECT DISTINCT level FROM floors")
+        cursor.execute("SELECT DISTINCT floor FROM rooms")
         floors = {}
         for (level,) in cursor.fetchall():
             floors[level] = house.register_floor(level)
@@ -79,16 +79,16 @@ class SmartHouseRepository:
 
 
     def load_devices(self, cursor, house, rooms):
-        cursor.execute("SELECT id, device_type, supplier, model_name, room_name FROM devices")     # henter fra databasen
+        cursor.execute("SELECT id, kind, supplier, product, room FROM devices")     # henter fra databasen
 
-        for (id, device_type, supplier, model_name, room_name) in cursor.fetchall():                # sjekker datbaesen mot room fuksjonen
+        for (id, kind, supplier, product, room_name) in cursor.fetchall():                # sjekker datbaesen mot room fuksjonen
             room = rooms.get(room_name)
 
             if room:                                                                                   # sjekker om det er sensor eller acutaror
-                if "sensor" in device_type.lower():
-                    device = Sensor(id, device_type, supplier, model_name)
+                if "sensor" in kind.lower():
+                    device = Sensor(id, kind, supplier, product)
                 else:
-                    device = Actuator(id, device_type, supplier, model_name)
+                    device = Actuator(id, kind, supplier, product)
 
                 house.register_device(room, device)                                                       # registrer det i house
 
