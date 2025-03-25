@@ -68,27 +68,27 @@ class SmartHouseRepository:
         return floors
 
     def load_rooms(self, cursor, house, floors):
-        cursor.execute("SELECT name, area, floor FROM rooms")
+        cursor.execute("SELECT id , name, area, floor FROM rooms")
         rooms = {}
 
-        for (name, area, floor) in cursor.fetchall():              # packer ut av tuppel iterer gjennom fetchall
-            floor = floors.get(floor)                               # henter en dict for fra funksjonen over floors og sjekker om  vi har en etasje som matcher
+        for (room_id, name, area, floor) in cursor.fetchall():                     # packer ut av tuppel iterer gjennom fetchall
+            floor = floors.get(floor)                                     # henter en dict for fra funksjonen over floors og sjekker om  vi har en etasje som matcher
             if floor :                                                    # går videre hvis testen over stemmer
-                rooms[name] = house.register_room(floor, area, name)     # legger inn rom i dict inni house
+                rooms[room_id] = house.register_room(floor, area, name)      # legger inn rom i dict inni house
         return rooms
 
 
     def load_devices(self, cursor, house, rooms):
-        cursor.execute("SELECT id, kind, supplier, product, room FROM devices")     # henter fra databasen
+        cursor.execute("SELECT id, kind, category, supplier, product, room FROM devices")     # henter fra databasen slår sammen tabeler for og fjerne feil ved test med room og roon_navn
 
-        for (id, kind, supplier, product, room_name) in cursor.fetchall():                # sjekker datbaesen mot room fuksjonen
-            room = rooms.get(room_name)
+        for (device_id, kind, category, supplier, product, room_id) in cursor.fetchall():                # sjekker datbaesen mot room fuksjonen
+            room = rooms.get(room_id)
 
             if room:                                                                                   # sjekker om det er sensor eller acutaror
-                if "sensor" in kind.lower():
-                    device = Sensor(id, kind, supplier, product)
+                if "sensor" in category.lower():
+                    device = Sensor(device_id, kind, supplier, product)
                 else:
-                    device = Actuator(id, kind, supplier, product)
+                    device = Actuator(device_id, kind, supplier, product)
 
                 house.register_device(room, device)                                                       # registrer det i house
 
@@ -99,10 +99,14 @@ class SmartHouseRepository:
         Returns None if the given object has no sensor readings.
         """
         # TODO: After loading the smarthouse, continue here
+     
+        if sensor is None or not sensor.is_sensor():            # controll slik at vi ikke får problemer i koden 
+            return None
+    
+        cursur = self.conn.cursor()
+       # print("DEBUG: sensor.id =", repr(sensor.id))
 
-        cur = self.conn.cursor()
-
-        cur.execute("""
+        cursur.execute("""
             SELECT ts, value, unit
             FROM measurements
             WHERE device = ?
@@ -110,14 +114,12 @@ class SmartHouseRepository:
             LIMIT 1
         """, (sensor.id,))
 
-        row = cur.fetchone()
-
+        row = cursur.fetchone()
 
         if row:
             ts_str, value, unit = row
-            ts = datetime.fromisoformat(ts_str)
-            return Measurement(ts, value, unit)
-
+            return Measurement(ts_str, value, unit)
+        
         return None
 
 
