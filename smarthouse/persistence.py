@@ -71,7 +71,7 @@ class SmartHouseRepository:
         cursor.execute("SELECT id , name, area, floor FROM rooms")
         rooms = {}
 
-        for (room_id, name, area, floor) in cursor.fetchall():                     # packer ut av tuppel iterer gjennom fetchall
+        for (room_id, name, area, floor) in cursor.fetchall():            # packer ut av tuppel iterer gjennom fetchall
             floor = floors.get(floor)                                     # henter en dict for fra funksjonen over floors og sjekker om  vi har en etasje som matcher
             if floor :                                                    # går videre hvis testen over stemmer
                 rooms[room_id] = house.register_room(floor, area, name)      # legger inn rom i dict inni house
@@ -89,6 +89,13 @@ class SmartHouseRepository:
                     device = Sensor(device_id, kind, supplier, product)
                 else:
                     device = Actuator(device_id, kind, supplier, product)
+
+                    #Her leser vi lagret state fra actuator_states-tabellen
+                    cursor.execute("SELECT state FROM actuator_states WHERE device_id = ?", (device_id,))
+                    state_row = cursor.fetchone()
+                    if state_row is not None:
+                        device.state = bool(state_row[0])  # konverter 1/0 til True/False
+
 
                 house.register_device(room, device)                                                       # registrer det i house
 
@@ -157,18 +164,96 @@ class SmartHouseRepository:
         The result should be a dictionary where the keys are strings representing dates (iso format) and 
         the values are floating point numbers containing the average temperature that day.
         """
-        # TODO: This and the following statistic method are a bit more challenging. Try to design the respective 
-        #       SQL statements first in a SQL editor like Dbeaver and then copy it over here.  
-        return NotImplemented
 
+        # finn room_id basert på room_name
+        cursor = self.conn.cursor()
+        cursor.execute("SELECT id FROM rooms WHERE name = ?", (room.room_name,))
+        row = cursor.fetchone()
+        if not row:
+            return {}
+        room_id = row[0]
+
+
+        sql_query = """
+            SELECT DATE(m.ts) AS day, AVG(m.value) AS avg_temp
+            FROM measurements m
+            JOIN devices d ON m.device = d.id
+            WHERE d.room = ?
+            AND m.unit = '°C'
+        """
+            # parmeter er en plass holder som fylles in i sql_query hvor det ? er plassert 
+        
+        parameters =  [room_id]
     
+        # hvis det er en dato så legger vi til mere i sql spørigen,
+        if from_date :
+            from_date += " 00:00:00"
+            sql_query += " AND m.ts >= ?"
+            parameters.append(from_date)
+        if until_date :
+            # må legge until_date += "T23:59:59" for og inkuldere helle dagen i sql spøørigen fordi AND m.ts <= ?  blir bare første sekund av dagen 
+            until_date += " 23:59:59"                    
+            sql_query += " AND m.ts <= ?"
+            parameters.append(until_date)
+
+        sql_query += " GROUP BY DATE(m.ts)"
+
+        cursor.execute(sql_query, parameters)
+        rows = cursor.fetchall()                        # fetchall kan bare brukes 1 gang, tidliger kode brukte den 2 ganger ga store poroblemer 
+
+
+        result = {}                                     # setter resultet fra sql spørigen  cursor.execute 
+        for day, avg_temp in rows:
+            result[day] = round(avg_temp, 4)            # runder av til 4
+
+        return result
+
     def calc_hours_with_humidity_above(self, room, date: str) -> list:
         """
         This function determines during which hours of the given day
         there were more than three measurements in that hour having a humidity measurement that is above
-        the average recorded humidity in that room at that particular time.
-        The result is a (possibly empty) list of number representing hours [0-23].
-        """
-        # TODO: implement
-        return NotImplemented
+        the average recorded humidity in that room for the entire day.
+        The result is a (possibly empty) list of numbers representing hours [0-23].
+    """
 
+        # Finn room_id basert på room_name (gjenbruk fra tidligere kode)
+        cursor = self.conn.cursor()
+        cursor.execute("SELECT id FROM rooms WHERE name = ?", (room.room_name,))
+        row = cursor.fetchone()
+        if not row:
+            return []
+        room_id = row[0]
+
+        # Beregn dagsgjennomsnittet for rommet den datoen
+        cursor.execute("""
+            SELECT AVG(m.value)
+            FROM measurements m
+            JOIN devices d ON m.device = d.id
+            WHERE d.room = ? AND m.unit = '%' AND DATE(m.ts) = ?
+        """, (room_id, date))
+        row = cursor.fetchone()
+        if not row or row[0] is None:
+            return []
+        daily_avg = row[0]
+
+        result = []
+
+        # Hent målinger per time for å finne de timene med mer enn 3 målinger over dagsgjennomsnittet
+        for hour in range(24):
+            cursor.execute("""
+                SELECT COUNT(*)
+                FROM measurements m
+                JOIN devices d ON m.device = d.id
+                WHERE d.room = ?
+                AND m.unit = '%'
+                AND DATE(m.ts) = ?
+                AND strftime('%H', m.ts) = ?
+                AND m.value > ?
+        """, (room_id, date, f"{hour:02d}", daily_avg))
+
+            count = cursor.fetchone()[0]
+
+            if count > 3:
+                result.append(hour)
+
+        return result
