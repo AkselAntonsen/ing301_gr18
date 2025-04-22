@@ -5,7 +5,7 @@ from fastapi.responses import RedirectResponse
 from smarthouse.persistence import SmartHouseRepository
 from pathlib import Path
 import os
-from routes import Routes_SensorData, Routes_measurement
+from routes import Routes_SensorData, Routes_measurement, ActuatorStateInput
 
 def setup_database():
     project_dir = Path(__file__).parent.parent
@@ -13,7 +13,6 @@ def setup_database():
     return SmartHouseRepository(str(db_file.absolute()))
 
 app = FastAPI()
-
 
 repo = setup_database()
 
@@ -207,10 +206,6 @@ def get_all_Devices() -> dict[str, int | float]:
 
     return {"devices": device_data}
 
-
-
-
-
 # ferdig    
 @app.get("smarthouse/device/{uuid}")
 def get_spesifc_device(uuid) -> dict[str, int | float]:
@@ -231,7 +226,6 @@ def get_spesifc_device(uuid) -> dict[str, int | float]:
             "room": device.room.room_name if device.room else None,  # Rommet enheten er plassert 
             "category": "sensor" if device.is_sensor() else "actuator"
     }
-
 
 
     
@@ -259,30 +253,186 @@ def get_sensor_curent_messurment(uuid) -> dict[str, int | float]:
     }
 
 
-# ferdig POST
+# ferdig
 @app.post("smarthouse/sensor/{uuid}/current")
-def add_measurement_to_db(uuid: str, measurement: Routes_measurement):
+def add_measurement(uuid: str,  measurement: MeasurementInput):
     """POST smarthouse/sensor/{uuid}/current - add measurement for sensor uuid """
-    result = sensor_store.add_measurement(uuid, measurement)
-    return {"message": "Måling lagt til", "data": result}
+    # finn enheten 
+    device = smarthouse.get_device_by_id(uuid)
 
-# ikke ferdig GET
+    # sjekk om den finnes 
+    if not device:
+        raise HTTPException(status_code=404, detail=f"Enhet med id '{uuid}' finnes ikke.")
+    if not device.is_sensor():
+        raise HTTPException(status_code=400, detail=f"Enhet med id '{uuid}' er ikke en sensor.")
+    
+    # lagre i databasen
+    cursor = repo.cursor()
+    cursor.execute(
+        """
+        INSERT INTO measurements (device, ts, value, unit)
+        VALUES (?, ?, ?, ?)
+        """,
+        (
+            uuid,
+            measurement.timestamp.isoformat(),
+            measurement.value,
+            measurement.unit
+        )
+    )
+
+    repo.conn.commit()
+    
+    return {
+        "message": f"Måling lagret for sensor '{uuid}'.",
+        "data": {
+            "timestamp": measurement.timestamp,
+            "value": measurement.value,
+            "unit": measurement.unit
+        }
+    }
+
+
+
+
+# ferdig
 @app.get(" smarthouse/sensor/{uuid}/values?limit=n")
-def get_smarthouse_info(fid,rid) -> dict[str, int | float]:
+def get_n_latest_measurments(uuid:str, limit: Optional[int] = None ) -> dict[str, int | float]:
+
+    """get n latest available measurements for sensor uuid. 
+    If query parameter not present, then all available measurements.
+    """
+    # finn enheten 
+    device = smarthouse.get_device_by_id(uuid)
+
+    # sjekk om den finnes 
+    if not device:
+        raise HTTPException(status_code=404, detail=f"Enhet med id '{uuid}' finnes ikke.")
+    if not device.is_sensor():
+        raise HTTPException(status_code=400, detail=f"Enhet med id '{uuid}' er ikke en sensor.")
+    
+     # SQL-spørring
+    sql = """
+        SELECT ts, value, unit
+        FROM measurements
+        WHERE device = ?
+        ORDER BY ts DESC
+    """
+    params = [uuid]
+
+    if limit:
+        sql += "LIMIT  ?"
+        params.append(limit)
+
+    # Kjør spørring
+    cursor = repo.cursor()
+    cursor.execute(sql, params)
+    rows = cursor.fetchall()
+
+    # Formatér resultat
+    measurements = [
+        {"timestamp": ts, "value": value, "unit": unit}
+        for ts, value, unit in rows
+    ]
+
+    return {"sensor_id": uuid, "measurements": measurements}
     
 
-# ikke ferdig DELETE
-@app.get("smarthouse/sensor/{uuid}/oldest")
-def get_smarthouse_info(fid,rid) -> dict[str, int | float]:
+
+# ferdig D
+@app.deletet("smarthouse/sensor/{uuid}/oldest")
+def deletet_oldest_measurment_from_sensor(uuid) -> dict[str, int | float]:
+    """delete oldest measurements for sensor uuid"""
+    if not device:
+        raise HTTPException(status_code=404, detail=f"Enhet med id '{uuid}' finnes ikke.")
+    if not device.is_sensor():
+        raise HTTPException(status_code=400, detail=f"Enhet med id '{uuid}' er ikke en sensor.")
+    
+
+    cursor = repo.cursor()          
+
+     # Finn eldste måling
+    cursor.execute( """
+        SELECT ts, value, unit
+        FROM measurements
+        WHERE device = ?
+        ORDER BY ts ASC
+        LIMIT 1 
+    """, (uuid,))
+
+    row = cursor.fetchone()
+
+    if not row:
+        raise HTTPException(status_code=404, detail="Ingen målinger funnet for denne sensoren.")
+    
+      # 4. Slett den eldste målingen
+    timestamp = row[0]
+    cursor.execute("""
+        DELETE FROM measurements
+        WHERE device = ? AND ts = ?
+    """, (uuid, timestamp))
+    repo.conn.commit()
+
+    return {
+        "message": f"Eldste måling for sensor '{uuid}' er slettet.",
+        "deleted": {
+            "timestamp": row[0],
+            "value": row[1],
+            "unit": row[2]
+        }
+    }
+
+
+
 
 
 # ikke ferdig get
 @app.get("smarthouse/actuator/{uuid}/current")
-def get_smarthouse_info(fid,rid) -> dict[str, int | float]:
+def get_actuator_curent_state(uuid) -> dict[str, int | float]:
+    """get current state for actuator uuid"""
 
+    device = smarthouse.get_device_by_id(uuid)
+
+    if not device:
+        raise HTTPException(status_code=404, detail=f"Enhet med id '{uuid}' finnes ikke.")
+    if not device.is_actuator():
+        raise HTTPException(status_code=400, detail=f"Enhet med id '{uuid}' er ikke en actuator.")
+
+    current_state = device.is_active(device)          # True/False
+    
+    return {
+        "id": device.id,
+        "state": "on" if current_state else "off",
+        "type": device.device_type,
+        "model": device.model_name,
+        "room": device.room.room_name if device.room else None
+    }
 # ikke ferdig PUT
 @app.get("smarthouse/device/{uuid}")
-def get_smarthouse_info(fid,rid) -> dict[str, int | float]:
+def update_actuator_state(uuid: str, update: ActuatorStateInput):
+    """
+    Oppdaterer nåværende tilstand for en actuator.
+    """
+    device = smarthouse.get_device_by_id(uuid)
+
+    if not device:
+        raise HTTPException(status_code=404, detail=f"Enhet med id '{uuid}' finnes ikke.")
+    if not device.is_actuator():
+        raise HTTPException(status_code=400, detail=f"Enhet med id '{uuid}' er ikke en actuator.")
+
+    # Oppdater lokal tilstand
+    if update.state:
+        device.turn_on()
+    else:
+        device.turn_off()
+
+    # Lagre i database
+    repo.update_actuator_state(device)
+
+    return {
+        "message": f"Tilstand for actuator '{uuid}' er oppdatert.",
+        "state": "on" if device.is_active() else "off"
+    }
 
 
 if __name__ == '__main__':
