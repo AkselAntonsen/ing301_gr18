@@ -5,12 +5,15 @@ from fastapi.responses import RedirectResponse
 from smarthouse.persistence import SmartHouseRepository
 from pathlib import Path
 import os
+from routes import Routes_SensorData, Routes_measurement
+
 def setup_database():
     project_dir = Path(__file__).parent.parent
     db_file = project_dir / "data" / "db.sql" # you have to adjust this if you have changed the file name of the database
     return SmartHouseRepository(str(db_file.absolute()))
 
 app = FastAPI()
+
 
 repo = setup_database()
 
@@ -256,10 +259,12 @@ def get_sensor_curent_messurment(uuid) -> dict[str, int | float]:
     }
 
 
-# ikke ferdig POST
-@app.get("smarthouse/sensor/{uuid}/current")
-def get_smarthouse_info(fid,rid) -> dict[str, int | float]:
-
+# ferdig POST
+@app.post("smarthouse/sensor/{uuid}/current")
+def add_measurement_to_db(uuid: str, measurement: Routes_measurement):
+    """POST smarthouse/sensor/{uuid}/current - add measurement for sensor uuid """
+    result = sensor_store.add_measurement(uuid, measurement)
+    return {"message": "Måling lagt til", "data": result}
 
 # ikke ferdig GET
 @app.get(" smarthouse/sensor/{uuid}/values?limit=n")
