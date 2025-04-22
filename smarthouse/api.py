@@ -5,7 +5,8 @@ from fastapi.responses import RedirectResponse
 from smarthouse.persistence import SmartHouseRepository
 from pathlib import Path
 import os
-from routes import Routes_SensorData, Routes_measurement, ActuatorStateInput
+from smarthouse.routes import ActuatorStateInput, MeasurementInput
+from typing import Optional
 
 def setup_database():
     project_dir = Path(__file__).parent.parent
@@ -340,7 +341,7 @@ def get_n_latest_measurments(uuid:str, limit: Optional[int] = None ) -> dict[str
 
 
 # ferdig D
-@app.deletet("smarthouse/sensor/{uuid}/oldest")
+@app.delete("smarthouse/sensor/{uuid}/oldest")
 def deletet_oldest_measurment_from_sensor(uuid) -> dict[str, int | float]:
     """delete oldest measurements for sensor uuid"""
     if not device:
@@ -386,7 +387,7 @@ def deletet_oldest_measurment_from_sensor(uuid) -> dict[str, int | float]:
 
 
 
-# ikke ferdig get
+# ferdig get
 @app.get("smarthouse/actuator/{uuid}/current")
 def get_actuator_curent_state(uuid) -> dict[str, int | float]:
     """get current state for actuator uuid"""
@@ -408,7 +409,7 @@ def get_actuator_curent_state(uuid) -> dict[str, int | float]:
         "room": device.room.room_name if device.room else None
     }
 # ikke ferdig PUT
-@app.get("smarthouse/device/{uuid}")
+@app.put("smarthouse/device/{uuid}")
 def update_actuator_state(uuid: str, update: ActuatorStateInput):
     """
     Oppdaterer nåværende tilstand for en actuator.

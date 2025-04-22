@@ -11,6 +11,12 @@ class ActuatorStateInput(BaseModel):
     state: bool
 
 
+class MeasurementInput(BaseModel):
+    timestamp: datetime
+    value: float
+    unit: str
+
+
 
 # trenger kansjke ikke denne da det er midlertidig lagring og oppgaven spør om hardlagring 
 """class Routes_SensorData:
