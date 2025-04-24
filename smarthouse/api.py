@@ -54,7 +54,7 @@ def get_smarthouse_info() -> dict[str, int | float]:
     }
 
 # Ferdig
-@app.get("smarthouse/floor")
+@app.get("/smarthouse/floor")
 def get_all_floors() : 
     floors = smarthouse.get_floors()
     """
@@ -86,8 +86,8 @@ def get_all_floors() :
     return {"floors": floor_data}
 
 # ferdig
-@app.get("smarthouse/floor/{fid}")
-def get_flor_by_id():
+@app.get("/smarthouse/floor/{fid}")
+def get_flor_by_id(fid:int):
     """
     information about a floor given by fid
     """
@@ -111,7 +111,7 @@ def get_flor_by_id():
 
 #ferdig
 @app.get("/smarthouse/floor/{fid}/room")
-def get_floor_specific_room(fid) :
+def get_floor_specific_room(fid:int) :
     """ information about all rooms on a given floor fid """
 
     # Finn etasje
@@ -147,8 +147,8 @@ def get_floor_specific_room(fid) :
 
 
 #ferdig
-@app.get("smarthouse/floor/{fid}/room/{rid}")
-def get_spesifc_room(fid,rid) -> dict[str, int | float]:
+@app.get("/smarthouse/floor/{fid}/room/{rid}")
+def get_spesifc_room(fid:int,rid:int) -> dict[str, int | float]:
     """
     information about a specific room rid on a given floor fid
     """
@@ -184,7 +184,7 @@ def get_spesifc_room(fid,rid) -> dict[str, int | float]:
     }
  
 #ferdig   
-@app.get("smarthouse/device")
+@app.get("/smarthouse/device")
 def get_all_Devices() -> dict[str, int | float]:
     devices = smarthouse.get_devices()
     """
@@ -208,8 +208,8 @@ def get_all_Devices() -> dict[str, int | float]:
     return {"devices": device_data}
 
 # ferdig    
-@app.get("smarthouse/device/{uuid}")
-def get_spesifc_device(uuid) -> dict[str, int | float]:
+@app.get("/smarthouse/device/{uuid}")
+def get_spesifc_device(uuid:int) -> dict[str, int | float]:
 
     """ information for a given device identfied by uuid """
 
@@ -231,8 +231,8 @@ def get_spesifc_device(uuid) -> dict[str, int | float]:
 
     
 #ferdig
-@app.get("smarthouse/sensor/{uuid}/current")
-def get_sensor_curent_messurment(uuid) -> dict[str, int | float]:
+@app.get("/smarthouse/sensor/{uuid}/current")
+def get_sensor_curent_messurment(uuid:int) -> dict[str, int | float]:
     """get current sensor measurement for sensor uuid"""
 
     device = smarthouse.get_device_by_id(uuid)
@@ -255,7 +255,7 @@ def get_sensor_curent_messurment(uuid) -> dict[str, int | float]:
 
 
 # ferdig
-@app.post("smarthouse/sensor/{uuid}/current")
+@app.post("/smarthouse/sensor/{uuid}/current")
 def add_measurement(uuid: str,  measurement: MeasurementInput):
     """POST smarthouse/sensor/{uuid}/current - add measurement for sensor uuid """
     # finn enheten 
@@ -297,7 +297,7 @@ def add_measurement(uuid: str,  measurement: MeasurementInput):
 
 
 # ferdig
-@app.get(" smarthouse/sensor/{uuid}/values?limit=n")
+@app.get("/smarthouse/sensor/{uuid}/values?limit=n")
 def get_n_latest_measurments(uuid:str, limit: Optional[int] = None ) -> dict[str, int | float]:
 
     """get n latest available measurements for sensor uuid. 
@@ -341,7 +341,7 @@ def get_n_latest_measurments(uuid:str, limit: Optional[int] = None ) -> dict[str
 
 
 # ferdig D
-@app.delete("smarthouse/sensor/{uuid}/oldest")
+@app.delete("/smarthouse/sensor/{uuid}/oldest")
 def deletet_oldest_measurment_from_sensor(uuid) -> dict[str, int | float]:
     """delete oldest measurements for sensor uuid"""
     if not device:
@@ -388,7 +388,7 @@ def deletet_oldest_measurment_from_sensor(uuid) -> dict[str, int | float]:
 
 
 # ferdig get
-@app.get("smarthouse/actuator/{uuid}/current")
+@app.get("/smarthouse/actuator/{uuid}/current")
 def get_actuator_curent_state(uuid) -> dict[str, int | float]:
     """get current state for actuator uuid"""
 
@@ -409,7 +409,7 @@ def get_actuator_curent_state(uuid) -> dict[str, int | float]:
         "room": device.room.room_name if device.room else None
     }
 # ikke ferdig PUT
-@app.put("smarthouse/device/{uuid}")
+@app.put("/smarthouse/device/{uuid}")
 def update_actuator_state(uuid: str, update: ActuatorStateInput):
     """
     Oppdaterer nåværende tilstand for en actuator.
