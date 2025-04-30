@@ -13,6 +13,9 @@ def lightbulb_cmd(state, did):
 
     logging.info(f"Dashboard: {new_state}")
 
+    actuatorState = ActuatorState(new_state == 0n)
+    url = common.BASE_URL + f"device/{did}"                     # bruker common.py og mer robust code 
+
     # TODO: START
     # send HTTP request with new actuator state to cloud service
 
