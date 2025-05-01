@@ -11,16 +11,19 @@ def lightbulb_cmd(state, did):
 
     new_state = state.get()
 
-    logging.info(f"Dashboard: {new_state}")
-
-    actuatorState = ActuatorState(new_state == 0n)
-    url = common.BASE_URL + f"device/{did}"                     # bruker common.py og mer robust code 
-
-    # TODO: START
-    # send HTTP request with new actuator state to cloud service
+    # logging.info(f"Dashboard: {new_state}")                               # Trenger ikke og ha denne, men lar den stå der
 
 
-    # TODO: END
+    actuator_state = ActuatorState(new_state == 0n)
+    url = common.BASE_URL + f"device/{did}"                                 # Bruker common.py for en mer robust code 
+
+    try:                                                                    # Oppdater med put til API
+        response = requests.put(url, json={"state": actuator_state.state})
+        response.raise_for_status()
+    except requests.RequestException as e:
+        logging.error(f"Failed to update lightbulb state: {e}")             # Feil melding hvis det ikke går
+
+   
 
 
 def init_lightbulb(container, did):

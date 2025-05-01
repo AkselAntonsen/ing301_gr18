@@ -12,13 +12,16 @@ def refresh_btn_cmd(temp_widget, did):
 
     logging.info("Temperature refresh")
 
-    # TODO: START
-    # send request to cloud service to obtain current temperature
+    url = common.BASE_URL + f"sensor/{did}/current"
 
-    # replace statement below with measurement from response
-    sensor_measurement = SensorMeasurement(init_value="-273.15")
-
-    # TODO: END
+    try:
+        response = requests.get(url)
+        response.raise_for_status()
+        data = response.json()
+        sensor_measurement = SensorMeasurement(init_value=str(data["value"]))
+    except requests.RequestException as e:
+        logging.error(f"Failed to fetch temperature: {e}")
+        sensor_measurement = SensorMeasurement(init_value="-273.15")
 
     # update the text field in the user interface
     temp_widget['state'] = 'normal' # to allow text to be changed
