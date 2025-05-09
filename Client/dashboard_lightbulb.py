@@ -11,9 +11,6 @@ def lightbulb_cmd(state, did):
 
     new_state = state.get()
 
-    # logging.info(f"Dashboard: {new_state}")                               # Trenger ikke og ha denne, men lar den stå der
-
-
     actuator_state = ActuatorState(new_state == 0n)
     url = common.BASE_URL + f"device/{did}"                                 # Bruker common.py for en mer robust code 
 

@@ -23,27 +23,20 @@ class Actuator:
 
             time.sleep(common.LIGHTBULB_SIMULATOR_SLEEP_TIME)
 
-    def client(self):
+def client(self):
+    logging.info(f"Actuator Client {self.did} starting")
+    while True:
+        try:
+            url = common.BASE_URL + f"actuator/{self.did}/current"
+            response = requests.get(url)
+            response.raise_for_status()
+            data = response.json()
+            self.state.set_state(data["state"] == "on")
+        except requests.RequestException as e:
+            logging.error(f"Failed to fetch actuator state: {e}")
+        
+        time.sleep(common.LIGHTBULB_CLIENT_SLEEP_TIME)
 
-        logging.info(f"Actuator Client {self.did} starting")
-
-        # TODO: START
-        # send request to cloud service with regular intervals and
-        # set state of actuator according to the received response
-
-        logging.info(f"Client {self.did} finishing")
-
-        # TODO: END
-
-    def run(self):
-
-        pass
-        # TODO: START
-
-        # start thread simulating physical light bulb
-
-        # start thread receiving state from the cloud
-
-        # TODO: END
-
-
+def run(self):
+    threading.Thread(target=self.simulator, daemon=True).start()
+    threading.Thread(target=self.client, daemon=True).start()
