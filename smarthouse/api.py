@@ -8,6 +8,8 @@ import os
 from smarthouse.routes import ActuatorStateInput, MeasurementInput
 from typing import Optional
 
+# .venv\Scripts\activate.bat for og starte vituelt miljø 
+
 def setup_database():
     project_dir = Path(__file__).parent.parent
     db_file = project_dir / "data" / "db.sql" # you have to adjust this if you have changed the file name of the database

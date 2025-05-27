@@ -35,16 +35,17 @@ class Device:
     def is_actuator(self):
         return isinstance(self, Actuator)
 
-
+# arver egenskaper fra devices 
 class Sensor(Device):
     def __init__(self, id: str, device_type: str, supplier: str, model_name: str, measurements: Optional[List[Measurement]] = None):
+        #hva som arves fra devices
         super().__init__(id, device_type, supplier, model_name)
         self.measurements = measurements or []
 
     def last_measurement(self):
         return self.measurements[-1] if self.measurements else None
 
-
+# bra eksempel på inncapsling 
 class Actuator(Device):
     def __init__(self, id: str, device_type: str, supplier: str, model_name: str, state: bool = False):
         super().__init__(id, device_type, supplier, model_name)
