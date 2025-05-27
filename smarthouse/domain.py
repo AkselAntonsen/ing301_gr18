@@ -20,7 +20,6 @@ class Measurement:
 
 
 
-
 class Device:
     def __init__(self, id: str, device_type: str, supplier: str,  model_name: str):
         self.id = id

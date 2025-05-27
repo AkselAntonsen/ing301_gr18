@@ -187,7 +187,7 @@ def get_spesifc_room(fid:int,rid:int) -> dict[str, int | float]:
  
 #ferdig   
 @app.get("/smarthouse/device")
-def get_all_Devices() -> dict[str, int | float]:
+def get_all_Devices() :
     devices = smarthouse.get_devices()
     """
     Returnerer en oversikt over alle devices i smarthuset,
